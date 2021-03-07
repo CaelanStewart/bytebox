@@ -1,0 +1,1 @@
+export type Callback<T extends any[], R extends any = any> = (...args: T) => R;
