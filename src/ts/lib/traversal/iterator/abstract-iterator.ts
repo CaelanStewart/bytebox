@@ -9,9 +9,9 @@ export interface Options<V, T> {
 
 export type ResolvedOptions<V, T> = Optional<Required<Options<V, T>>, 'transformer'>;
 
-export type Iteratee<T> = Callback<T[]>;
+export type Iteratee<T, R = any> = Callback<[T], R>;
 
-export default abstract class AbstractIterator<V, T = V> {
+export default abstract class AbstractIterator<V, T = never> {
     protected index: number;
     protected readonly options: ResolvedOptions<V, T>;
 
@@ -25,6 +25,10 @@ export default abstract class AbstractIterator<V, T = V> {
     [Symbol.iterator] = this.nativeIterator;
 
     abstract clone(): AbstractIterator<V,  T>;
+
+    static new<V, T = never>(...args: any) {
+        throw new Error('This method must be overridden in derived classes');
+    }
 
     public nativeIterator() {
         this.begin();
@@ -69,7 +73,7 @@ export default abstract class AbstractIterator<V, T = V> {
     }
 
     indexInRange(index: number): boolean {
-        return index >= this.options.startIndex && index < this.options.endIndex;
+        return index < this.options.endIndex && index >= this.options.startIndex;
     }
 
     indexOutOfRange(index: number): boolean {
@@ -130,6 +134,18 @@ export default abstract class AbstractIterator<V, T = V> {
 
     isStart(): boolean {
         return this.index <= 0;
+    }
+
+    map<M>(mapper: Iteratee<V | T, M>): M[] {
+        const map: M[] = Array(this.options.endIndex - this.options.startIndex - 1);
+        let i = 0;
+
+        this.each(value => {
+            map[i] = mapper(value);
+            ++i;
+        });
+
+        return map;
     }
 
     each(iteratee: Iteratee<V | T>): void {

@@ -6,8 +6,9 @@
 // test2: 1139.291015625 ms
 // test3: 1743.509033203125 ms
 
-import createIterator from '@/lib/traversal/fast-iterator';
-import ArrayIterator from '@/lib/traversal/array-iterator';
+import createIterator from '@/performance-tests/iterator/alt-iterator';
+import ArrayIterator from '@/lib/traversal/iterator/array-iterator';
+import ChunkedIterator from '@/lib/traversal/iterator/chunked-iterator';
 
 const array = new Float32Array(10000000);
 
@@ -21,9 +22,7 @@ for (let i = 0; i < array.length; ++i) {
 //     startIndex: 0
 // });
 
-const iterator = new ArrayIterator<number>({
-    array
-});
+const iterator = ArrayIterator.new(array);
 
 const iterator2 = {
     [Symbol.iterator]: () => createIterator({

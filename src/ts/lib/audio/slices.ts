@@ -1,13 +1,13 @@
-import ArrayIterator from '@/lib/traversal/array-iterator';
-import {MonoAudioData} from '@/types/audio';
+import ArrayIterator from '@/lib/traversal/iterator/array-iterator';
+import {AudioData} from '@/types/audio';
 
 export default class SliceArray {
-    private audio: MonoAudioData;
+    private audio: AudioData;
     private readonly slices: [number, number][];
 
     [Symbol.iterator] = () => this.iterator().nativeIterator();
 
-    constructor(audio: MonoAudioData, slices: [number, number][] = []) {
+    constructor(audio: AudioData, slices: [number, number][] = []) {
         this.audio = audio;
         this.slices = slices;
     }

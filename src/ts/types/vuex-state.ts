@@ -1,5 +1,5 @@
-import {AudioData} from '@/types/audio';
+import {MultiChannelAudioData} from '@/types/audio';
 
 export interface VuexState {
-    sample: AudioData | null;
+    sample: MultiChannelAudioData | null;
 }

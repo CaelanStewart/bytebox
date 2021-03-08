@@ -1,7 +1,7 @@
 import {decode} from '@/lib/audio/node-wav';
 
-import {AudioData} from '@/types/audio';
+import {MultiChannelAudioData} from '@/types/audio';
 
-export default function arrayBufferToAudioData(buffer: ArrayBuffer): AudioData {
+export default function arrayBufferToAudioData(buffer: ArrayBuffer): MultiChannelAudioData {
     return decode(buffer);
 }

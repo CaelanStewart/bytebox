@@ -11,10 +11,10 @@
 <script lang="ts">
     import {defineComponent, watch, computed} from 'vue';
     import useChooseWavFile from '@/composable/input/choose-wav-file';
-    import convertAudioDataToMono from '@/lib/format/converters/audio-data-to-mono';
+    import convertMultiChannelAudioDataToMono from '@/lib/format/converters/multi-channel-audio-data-to-mono';
     import normalize from '@/lib/audio/normalize';
 
-    import {MonoAudioData} from '@/types/audio';
+    import {AudioData} from '@/types/audio';
 
     import InputFile from '@/components/input/file.vue';
 
@@ -28,13 +28,13 @@
         setup(props, context) {
             const {audioData, error, onInputChange} = useChooseWavFile();
 
-            const sample = computed<MonoAudioData | null>(() => {
+            const sample = computed<AudioData | null>(() => {
                 const data = audioData.value;
 
                 if (data) {
                     if (data.channelData.length) {
                         return normalize(
-                            convertAudioDataToMono(data)
+                            convertMultiChannelAudioDataToMono(data)
                         );
                     } else {
                         throw error.value = new Error('The chosen audio file contains no channels');

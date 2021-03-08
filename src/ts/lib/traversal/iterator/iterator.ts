@@ -1,5 +1,5 @@
 import {Optional} from '@/types/util';
-import AbstractIterator, {Options as SuperOptions} from '@/lib/traversal/abstract-iterator';
+import AbstractIterator, {Options as SuperOptions} from '@/lib/traversal/iterator/abstract-iterator';
 
 export interface Options<V, T> extends SuperOptions<V, T> {
     get(index: number): V | undefined;
@@ -16,6 +16,10 @@ export default class Iterator<V, T> extends AbstractIterator<V, T> {
         this.options = this.resolveOptions(options);
     }
 
+    static new<V extends any[], T extends any = V>(options: Options<V, T>): Iterator<V,  T> {
+        return new Iterator<V, T>(options);
+    }
+
     clone(): Iterator<V, T> {
         return new Iterator<V, T>(this.options);
     }
@@ -29,9 +33,5 @@ export default class Iterator<V, T> extends AbstractIterator<V, T> {
 
     resolveIndex(index: number) {
         return this.options.get(index);
-    }
-
-    indexInRange(index: number): boolean {
-        return index >= this.options.startIndex && index <= this.options.endIndex;
     }
 }

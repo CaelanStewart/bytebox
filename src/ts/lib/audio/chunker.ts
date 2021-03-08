@@ -1,9 +1,9 @@
-import {MonoAudioData} from '@/types/audio';
+import {AudioData} from '@/types/audio';
 
 class Chunker {
-    private audio: MonoAudioData;
+    private audio: AudioData;
 
-    constructor(audio: MonoAudioData) {
+    constructor(audio: AudioData) {
         this.audio = audio;
     }
 

@@ -1,7 +1,7 @@
-import {AudioData, MonoAudioData} from '@/types/audio';
+import {MultiChannelAudioData, AudioData} from '@/types/audio';
 import findMaxSample from '@/lib/audio/find-max-sample';
 
-function isAudioData(data: AudioData | MonoAudioData): data is AudioData {
+function isAudioData(data: MultiChannelAudioData | AudioData): data is MultiChannelAudioData {
     return 'channelData' in data;
 }
 
@@ -16,22 +16,22 @@ export function normalizeSamples(data: Float32Array, max: number = 1) {
     return normalized;
 }
 
-export default function normalize<T extends AudioData | MonoAudioData>(data: T): T {
+export default function normalize<T extends MultiChannelAudioData | AudioData>(data: T): T {
     if (isAudioData(data)) {
         return normalizeAudioData(data) as T;
     } else {
-        return normalizeMonoAudioData(data as MonoAudioData) as T;
+        return normalizeMonoAudioData(data as AudioData) as T;
     }
 }
 
-export function normalizeAudioData(data: AudioData): AudioData {
+export function normalizeAudioData(data: MultiChannelAudioData): MultiChannelAudioData {
     return {
         ...data,
         channelData: data.channelData.map(normalizeSamples)
     }
 }
 
-export function normalizeMonoAudioData(data: MonoAudioData): MonoAudioData {
+export function normalizeMonoAudioData(data: AudioData): AudioData {
     return {
         ...data,
         samples: normalizeSamples(data.samples)

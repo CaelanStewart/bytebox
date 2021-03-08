@@ -1,9 +1,9 @@
 export interface AudioData {
     readonly sampleRate: number;
-    readonly channelData: Float32Array[];
+    readonly samples: Float32Array;
 }
 
-export interface MonoAudioData {
+export interface MultiChannelAudioData {
     readonly sampleRate: number;
-    readonly samples: Float32Array;
+    readonly channelData: Float32Array[];
 }

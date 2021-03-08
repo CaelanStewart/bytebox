@@ -2,10 +2,10 @@ import {ref, watch} from 'vue';
 import useChooseFile from '@/composable/input/choose-file';
 import fileToAudioData from '@/lib/format/converters/file-to-audio-data';
 
-import {AudioData} from '@/types/audio';
+import {MultiChannelAudioData} from '@/types/audio';
 
 export default function useChooseWavFile() {
-    const audioData = ref<AudioData>();
+    const audioData = ref<MultiChannelAudioData>();
     const error = ref<Error>();
     const chooseFile = useChooseFile();
 
