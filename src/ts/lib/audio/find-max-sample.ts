@@ -1,8 +1,8 @@
-export default function findMaxSample(data: Float32Array): number {
+export default function findMaxSample(data: ArrayLike<number>): number {
     let max = 0;
 
-    for (const sample of data) {
-        const abs = Math.abs(sample);
+    for (let i = 0; i < data.length; ++i) {
+        const abs = Math.abs(data[i]);
 
         if (abs > max) {
             max = abs;

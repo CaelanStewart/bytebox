@@ -7,3 +7,11 @@ function createUidFunction() {
 }
 
 export const uid = createUidFunction();
+
+export function roundToMultiple(val: number, mul: number) {
+    return Math.round(val * mul) / mul;
+}
+
+export function roundToTolerance(val: number, tol: number) {
+    return roundToMultiple(val, 1 / tol);
+}

@@ -1,3 +1,5 @@
+import {roundToTolerance} from '@/lib/util';
+import findMaxSample from '@/lib/audio/find-max-sample';
 import {AudioData} from '@/types/audio';
 import createIterator from '@/lib/traversal/iterator/factories/audio-data-iterator';
 
@@ -5,9 +7,10 @@ interface Options {
     data: AudioData;
     chunkTimeMs: number;
     tolerance: number;
+    threshold: number;
 }
 
-export type CtorOptions = Optional<Options, 'tolerance'|'chunkTimeMs'>;
+export type CtorOptions = Optional<Options, 'tolerance'|'chunkTimeMs'|'threshold'>;
 
 export default class FindNoiseFloor {
     private readonly options: Options;
@@ -20,19 +23,43 @@ export default class FindNoiseFloor {
         return {
             tolerance: 0.1,
             chunkTimeMs: 5,
+            threshold: 0.5,
             ...options
         }
     }
 
     find(): number {
-        const volumes = this.getAverageVolumes();
+        const amplitudes = this.getAmplitudesBelowThreshold();
+        const map = this.getAmplitudeCountMap(amplitudes);
+        const sortedByCount = this.sortAmplitudesByCount(map);
 
-        return 0;
+        return sortedByCount[sortedByCount.length - 1];
     }
 
-    getAverageVolumes(): number[] {
+    sortAmplitudesByCount(map: Map<number, number>): number[] {
+        const tiers = [...map.keys()];
+
+        tiers.sort((a, b) => <number> map.get(a) - <number> map.get(b));
+
+        return tiers;
+    }
+
+    getAmplitudeCountMap(amplitudes: number[]) {
+        const map = new Map<number, number>();
+
+        amplitudes.forEach(amp => map.set(amp, (map.get(amp) ?? 0) + 1));
+
+        return map;
+    }
+
+    getAmplitudes(): number[] {
         return this.getIterator()
-            .map(chunk => chunk.reduce((a, b) => a + Math.abs(b), 0) / chunk.length);
+            .map(chunk => roundToTolerance(findMaxSample(chunk), this.options.tolerance));
+    }
+
+    getAmplitudesBelowThreshold(): number[] {
+        return this.getAmplitudes()
+            .filter(amp => amp <= this.options.threshold);
     }
 
     getIterator() {
