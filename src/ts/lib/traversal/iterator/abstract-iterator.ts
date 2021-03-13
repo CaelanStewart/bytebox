@@ -9,7 +9,7 @@ export interface Options<V, T> {
 
 export type ResolvedOptions<V, T> = Optional<Required<Options<V, T>>, 'transformer'>;
 
-export type Iteratee<T, R = any> = Callback<[T], R>;
+export type Iteratee<V, T, R = any> = Callback<[V | T, AbstractIterator<V,  T>], R>;
 
 export default abstract class AbstractIterator<V, T = never> {
     protected index: number;
@@ -136,33 +136,43 @@ export default abstract class AbstractIterator<V, T = never> {
         return this.index <= 0;
     }
 
-    map<M>(mapper: Iteratee<V | T, M>): M[] {
+    reduce<M>(reducer: Callback<[V | T | M, V | T | M], M>, initial: M): M {
+        let total = initial;
+
+        this.each(value => {
+            total = reducer(total, value);
+        });
+
+        return total;
+    }
+
+    map<M>(mapper: Iteratee<V, T, M>): M[] {
         const map: M[] = Array(this.options.endIndex - this.options.startIndex - 1);
         let i = 0;
 
         this.each(value => {
-            map[i] = mapper(value);
+            map[i] = mapper(value, this);
             ++i;
         });
 
         return map;
     }
 
-    each(iteratee: Iteratee<V | T>): void {
+    each(iteratee: Iteratee<V, T>): void {
         this.begin();
 
         for (; this.inRange(); this.next()) {
-            iteratee(this.current() as V | T);
+            iteratee(this.current() as V | T, this);
         }
 
         this.begin();
     }
 
-    eachReverse(iteratee: Iteratee<V | T>): void {
+    eachReverse(iteratee: Iteratee<V, T>): void {
         this.end();
 
         for (; this.inRange(); this.prev()) {
-            iteratee(this.current() as V | T);
+            iteratee(this.current() as V | T, this);
         }
 
         this.begin();

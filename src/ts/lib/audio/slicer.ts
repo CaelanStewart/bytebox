@@ -2,7 +2,7 @@ import SliceArray from '@/lib/audio/slices';
 import {Optional} from '@/types/util';
 import {AudioData} from '@/types/audio';
 import ChunkedIterator, {Options as ChunkedArrayIteratorOptions} from '@/lib/traversal/iterator/chunked-iterator';
-import FindNoiseFloor from '@/lib/audio/find-noise-floor';
+import FindAmplitude from '@/lib/audio/find-amplitude';
 import createIterator from '@/lib/traversal/iterator/factories/audio-data-iterator';
 
 interface Options {
@@ -25,23 +25,30 @@ export default class Slicer {
 
     private static resolveOptions(options: CtorOptions): Options {
         return {
-            chunkTimeMs: 10,
+            chunkTimeMs: 5,
             ...options
         }
     }
 
     inferThreshold() {
-        return FindNoiseFloor.find({
-            data: this.options.data
+        return FindAmplitude.findMode({
+            data: this.options.data,
+            min: 0,
+            max: 0.5
         });
     }
 
     findSliceIndices() {
         const slices = new SliceArray(this.options.data);
+        const findAmplitude = new FindAmplitude({
+            max: 1,
+            min: this.threshold,
+            tolerance: 0.1
+        });
 
-        this.getIterator().each(chunk => {
+        this.getIterator().each((chunk, iter) => {
 
-        })
+        });
     }
 
     getIterator() {
