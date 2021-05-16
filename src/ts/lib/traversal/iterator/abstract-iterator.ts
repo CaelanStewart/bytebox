@@ -8,8 +8,8 @@ export interface Options<V, T> {
 }
 
 export type ResolvedOptions<V, T> = Optional<Required<Options<V, T>>, 'transformer'>;
-
-export type Iteratee<V, T, R = any> = Callback<[V | T, AbstractIterator<V,  T>], R>;
+// AbstractIterator<V,  T>
+export type Iteratee<V, T, S extends AbstractIterator<V,  T>, R = any> = Callback<[V | T, S], R>;
 
 export default abstract class AbstractIterator<V, T = never> {
     protected index: number;
@@ -71,6 +71,14 @@ export default abstract class AbstractIterator<V, T = never> {
 
         return this.resolveIndex(index);
     }
+    
+    getPrev(index: number = this.index) {
+        return this.get(index - 1);
+    }
+    
+    getNext(index: number = this.index) {
+        return this.get(index + 1);
+    }
 
     indexInRange(index: number): boolean {
         return index < this.options.endIndex && index >= this.options.startIndex;
@@ -86,6 +94,10 @@ export default abstract class AbstractIterator<V, T = never> {
 
     isOutOfRange() {
         return this.indexOutOfRange(this.index);
+    }
+    
+    currentIndex() {
+        return this.index;
     }
 
     current() {
@@ -136,43 +148,43 @@ export default abstract class AbstractIterator<V, T = never> {
         return this.index <= 0;
     }
 
-    reduce<M>(reducer: Callback<[V | T | M, V | T | M], M>, initial: M): M {
+    reduce<M, SELF extends this>(reducer: Callback<[V | T | M, V | T | M, SELF], M>, initial: M): M {
         let total = initial;
 
         this.each(value => {
-            total = reducer(total, value);
+            total = reducer(total, value, this as SELF);
         });
-
+        
         return total;
     }
 
-    map<M>(mapper: Iteratee<V, T, M>): M[] {
+    map<M, SELF extends this>(mapper: Iteratee<V, T, SELF, M>): M[] {
         const map: M[] = Array(this.options.endIndex - this.options.startIndex - 1);
         let i = 0;
 
         this.each(value => {
-            map[i] = mapper(value, this);
+            map[i] = mapper(value, this as SELF);
             ++i;
         });
 
         return map;
     }
 
-    each(iteratee: Iteratee<V, T>): void {
+    each<SELF extends this>(iteratee: Iteratee<V, T, SELF>): void {
         this.begin();
 
         for (; this.inRange(); this.next()) {
-            iteratee(this.current() as V | T, this);
+            iteratee(this.current() as V | T, this as SELF);
         }
 
         this.begin();
     }
 
-    eachReverse(iteratee: Iteratee<V, T>): void {
+    eachReverse<SELF extends this>(iteratee: Iteratee<V, T, SELF>): void {
         this.end();
 
         for (; this.inRange(); this.prev()) {
-            iteratee(this.current() as V | T, this);
+            iteratee(this.current() as V | T, this as SELF);
         }
 
         this.begin();

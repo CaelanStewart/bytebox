@@ -1,3 +1,5 @@
+export type AnySampleArray = ArrayLike<number>;
+
 export interface AudioData {
     readonly sampleRate: number;
     readonly samples: Float32Array;
@@ -5,7 +7,7 @@ export interface AudioData {
 
 export interface AnyAudioData {
     sampleRate: number;
-    samples: ArrayLike<number>;
+    samples: AnySampleArray;
 }
 
 export interface MultiChannelAudioData {

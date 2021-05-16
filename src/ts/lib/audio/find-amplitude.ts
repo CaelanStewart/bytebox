@@ -1,9 +1,11 @@
-import {roundToTolerance} from '@/lib/util';
+import {roundToTolerance, msToLength} from '@/lib/util';
 import findMaxSample from '@/lib/audio/find-max-sample';
-import {AnyAudioData} from '@/types/audio';
-import createIterator from '@/lib/traversal/iterator/factories/audio-data-iterator';
+import findAvgSample from '@/lib/audio/find-avg-sample';
+import {AnyAudioData, AnySampleArray} from '@/types/audio';
+import ChunkedIterator from '@/lib/traversal/iterator/chunked-iterator';
 
 interface Options {
+    sampleRate: number;
     chunkTimeMs: number;
     tolerance: number;
     max: number;
@@ -31,23 +33,25 @@ export default class FindAmplitude {
         }
     }
 
-    findMode(data: AnyAudioData): number {
+    findMode(data: AnySampleArray): number {
         const amplitudes = this.getAmplitudesInRange(data);
+        
+        if (amplitudes.length === 0) return 0;
+        
         const map = this.getAmplitudeCountMap(amplitudes);
         const sortedByCount = this.sortAmplitudesByCount(map);
 
         return sortedByCount[sortedByCount.length - 1];
     }
 
-    findAverage(data: AnyAudioData) {
+    findAverage(data: AnySampleArray) {
         const amplitudes = this.getAmplitudesInRange(data);
-        let total = 0;
-
-        for (let i = 0, l = amplitudes.length; i < l; ++i) {
-            total += amplitudes[i];
+        
+        if (amplitudes.length) {
+            return findAvgSample(amplitudes);
         }
-
-        return total / amplitudes.length;
+        
+        return 0;
     }
 
     sortAmplitudesByCount(map: Map<number, number>): number[] {
@@ -68,25 +72,32 @@ export default class FindAmplitude {
         return map;
     }
 
-    getAmplitudes(data: AnyAudioData): number[] {
+    getAmplitudes(data: AnySampleArray): number[] {
         return this.getIterator(data)
             .map(chunk => roundToTolerance(findMaxSample(chunk), this.options.tolerance));
     }
 
-    getAmplitudesInRange(data: AnyAudioData): number[] {
+    getAmplitudesInRange(data: AnySampleArray): number[] {
         return this.getAmplitudes(data)
             .filter(amp => amp <= this.options.max && amp >= this.options.min);
     }
 
-    getIterator(data: AnyAudioData) {
-        return createIterator(data, this.options.chunkTimeMs);
+    getIterator(data: AnySampleArray) {
+        return ChunkedIterator.new(data, {
+            chunkSize: msToLength(this.options.chunkTimeMs, this.options.sampleRate),
+            allowRemainder: true
+        });
     }
 
     static make(options: CtorOptions) {
         return new this(options);
     }
 
-    static findMode(options: CtorOptions & {data: AnyAudioData}): number {
+    static findMode(options: CtorOptions & {data: AnySampleArray}): number {
         return this.make(options).findMode(options.data);
+    }
+
+    static findAverage(options: CtorOptions & {data: AnySampleArray}): number {
+        return this.make(options).findAverage(options.data);
     }
 }

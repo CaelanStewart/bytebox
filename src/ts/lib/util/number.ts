@@ -15,3 +15,7 @@ export function roundToMultiple(val: number, mul: number) {
 export function roundToTolerance(val: number, tol: number) {
     return roundToMultiple(val, 1 / tol);
 }
+
+export function msToLength(ms: number, sampleRate: number): number {
+	return Math.round(sampleRate / 1000 * ms);
+}

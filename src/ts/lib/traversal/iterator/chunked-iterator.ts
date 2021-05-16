@@ -58,13 +58,21 @@ export default class ChunkedIterator<V extends ArrayLike<any>, T extends any = n
             ...options
         }
     }
-
-    protected getRealIndex(index: number = this.index) {
-        return index * this.options.chunkSize;
+    
+    getVirtualIndex(realIndex: number) {
+        return Math.round(realIndex / this.options.chunkSize);
     }
 
-    resolveIndex(index: number): V[number][] | undefined {
-        const realIndex = this.getRealIndex();
+    getRealIndex(index: number = this.index) {
+        return index * this.options.chunkSize;
+    }
+    
+    resolveRealIndex(realIndex: number) {
+        return this.resolveIndex(this.getVirtualIndex(realIndex));
+    }
+
+    resolveIndex(index: number): V[number][] {
+        const realIndex = this.getRealIndex(index);
 
         return arraySlice(this.options.array, realIndex, realIndex + this.options.chunkSize) as V[number][];
     }
